@@ -1,0 +1,50 @@
+# sample information
+FORWARD_LIB_R1	./data/4P_R_R1.fq
+FORWARD_LIB_R2	./data/4P_R_R2.fq
+FORWARD_LIB_ODN	TGCGATAACACGCATTTCGCATAAG
+
+REVERSE_LIB_R1	./data/4P_L_R1.fq
+REVERSE_LIB_R2	./data/4P_L_R2.fq
+REVERSE_LIB_ODN	ATCTCTGAGCCTTATGCGAAATGCG
+
+CTRL	./control.bed
+
+# grna information
+GRNA	TTTGGGGTGATCAGACCCAACAGCAGG
+
+# Output directory
+OUTDIR	./out.TEST
+PREFIX	TEST
+
+# bin for tag-seq analysis pipeline
+BIN	/home/zhoujj/github/Tag-seq/bin
+
+# raw read QC and filtering parameters
+## tools
+FASTQC	/home/zhoujj/software/FastQC/fastqc
+AdapterRemoval	/home/zhoujj/software/adapterremoval/build/AdapterRemoval
+## parameters
+ADAPTER	/home/zhoujj/github/Tag-seq/bin/adapters.txt
+MINLEN	50
+READLEN	150
+
+# alignment
+## aligner
+STAR	/home/zhoujj/software/STAR/bin/Linux_x86_64_static/STAR
+
+## index
+GENOME	hg19
+INDEX	/home/zhoujj/data/hg19/star_index
+CHROMSIZE	/home/zhoujj/data/hg19/hg19.chrom.sizes
+
+## alignment parameters
+MAXINS	1000
+THREAD	16
+
+# other requirements
+BEDTOOLS	/usr/bin/bedtools
+SAMTOOLS	/usr/bin/samtools
+PICARD	/home/zhoujj/software/picard.jar
+umi_tools	/home/zhoujj/.local/bin/umi_tools
+water	/usr/bin/water
+bedops	/home/zhoujj/software/bedops/bin
