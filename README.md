@@ -93,15 +93,15 @@ Column 8: read count for minus strand in minus library
 
 Illustrate of off-targets sites and read count.
 
-![off-targets](https://upload-images.jianshu.io/upload_images/4180410-71d283fb5607859c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![off-targets](https://upload-images.jianshu.io/upload_images/4180410-71d283fb5607859c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240) <!-- .element height="50%" width="50%" -->
 
 #### 4. Read counts across sgRNA in target and off-target sites
 
-![sites](https://upload-images.jianshu.io/upload_images/4180410-55b3f78188a1227b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![sites](https://upload-images.jianshu.io/upload_images/4180410-55b3f78188a1227b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240) <!-- .element height="50%" width="50%" -->
 
 #### 5. Global view of target and off-target sites
 
-![global](https://upload-images.jianshu.io/upload_images/4180410-39b6e39d64178807.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![global](https://upload-images.jianshu.io/upload_images/4180410-39b6e39d64178807.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240) <!-- .element height="50%" width="50%" -->
 
 
 ## Tag-seq Runtime
