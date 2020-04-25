@@ -80,21 +80,14 @@ chr1    111700139       111700140       AAVS1.E_minus_minus_7763_6,AAVS1.E_plus_
 chr1    121478642       121478643       AAVS1.E_minus_plus_8420_6,AAVS1.E_plus_plus_12435_6     9       0       7       0
 ```
 
-Column 1: chromosome
-
-Column 2: start
-
-Column 3: end
-
-Column 4: id
-
-Column 5: read count for plus strand in plus library
-
-Column 6: read count for minus strand in plus library
-
-Column 7: read count for plus strand in minus library
-
-Column 8: read count for minus strand in minus library
+Column 1: chromosome  
+Column 2: start  
+Column 3: end  
+Column 4: id  
+Column 5: read count for plus strand in plus library  
+Column 6: read count for minus strand in plus library  
+Column 7: read count for plus strand in minus library  
+Column 8: read count for minus strand in minus library  
 
 #### 3. Potential off-targets
 
