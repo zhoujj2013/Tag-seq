@@ -66,11 +66,11 @@ sh work.sh
 ```
 ### Result
 
-1. QC statistics
+#### 1. QC statistics
 
 you can check [stat.txt](https://github.com/zhoujj2013/Tag-seq/blob/master/stat.txt).
 
-2. Information of potential targets in bed format
+#### 2. Information of potential targets in bed format
 
 ```
 chr1    10111   10112   AAVS1.E_minus_minus_2_9,AAVS1.E_plus_minus_1_13 0       29      0       12
@@ -79,25 +79,34 @@ chr1    68164302        68164303        AAVS1.E_minus_minus_4802_6,AAVS1.E_plus_
 chr1    111700139       111700140       AAVS1.E_minus_minus_7763_6,AAVS1.E_plus_plus_11377_6    9       0       0       5
 chr1    121478642       121478643       AAVS1.E_minus_plus_8420_6,AAVS1.E_plus_plus_12435_6     9       0       7       0
 ```
+
 Column 1: chromosome
+
 Column 2: start
+
 Column 3: end
+
 Column 4: id
+
 Column 5: read count for plus strand in plus library
+
 Column 6: read count for minus strand in plus library
+
 Column 7: read count for plus strand in minus library
+
 Column 8: read count for minus strand in minus library
 
-3. Potential off-targets
+#### 3. Potential off-targets
 
 Illustrate of off-targets sites and read count.
+
 ![off-targets](https://github.com/zhoujj2013/Tag-seq/blob/master/offtargets.png)
 
-4. Read counts across sgRNA in target and off-target sites
+#### 4. Read counts across sgRNA in target and off-target sites
 
 ![sites](https://github.com/zhoujj2013/Tag-seq/blob/master/sites.png)
 
-5. Global view of target and off-target sites
+#### 5. Global view of target and off-target sites
 
 ![global](https://github.com/zhoujj2013/Tag-seq/blob/master/global.png)
 
