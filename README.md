@@ -12,14 +12,23 @@ Tag-seq requires PERL v5, R, Python 2.7, [pip](https://bootstrap.pypa.io/get-pip
 Tag-seq also requires some third-party packages:
 
 [STAR aligner](https://github.com/alexdobin/STAR)
+
 [FASTQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+
 [AdapterRemoval](https://github.com/MikkelSchubert/adapterremoval)
+
 [BEDTOOLS](https://bedtools.readthedocs.io/en/latest/)
+
 [SAMTOOLS](http://samtools.sourceforge.net/)
+
 [PICARD](https://broadinstitute.github.io/picard/)
+
 [umi_tools](https://github.com/CGATOxford/UMI-tools)
+
 [bedops](https://bedops.readthedocs.io/en/latest/)
+
 water in [EMBOSS](http://emboss.sourceforge.net/download/)
+
 [RIdeogram](https://github.com/TickingClock1992/RIdeogram)
 
 Tag-seq have been tested in CentOS release 7.4 (Linux OS 64 bit).
