@@ -1,0 +1,32 @@
+Retrive reads contain TAG sequence
+	Filtered_Tag	Total_Tag	Passed_Tag	PassRate
+TEST_plus	0	100000	100000	100.00
+TEST_minus	0	100000	100000	100.00
+
+Trim low quanlity and adaptor
+	Filtered_Tag	Total_Tag	Passed_Tag	PassRate
+TEST_plus	362	100000	99638	99.64
+TEST_minus	643	100000	99357	99.36
+
+Alignment Summary
+	Total_Tag	Aligned_Tag	AlignmentRate
+TEST_plus	99638	99638	100.00
+TEST_minus	99357	99356	100.00
+
+Duplication report (UMI)
+Duplication rate
+	Total_tag	Uniq_Tag	Duplication rate(%)
+TEST_plus	99638	99638	0.00
+TEST_minus	99356	99354	0.00
+
+Filtering report (mapping quality and tag filtering)
+Usable rate
+	Total_tag	Usable_Tag	Filtering rate(%)
+TEST_plus	99638	99634	0.00
+TEST_minus	99354	99352	0.00
+
+Potential Target Num
+	Forward	Reverse
+TEST_plus	460	434
+TEST_minus	402	432
+

@@ -1,12 +1,14 @@
+# please replace them with the paths in your server.
 # sample information
 FORWARD_LIB_R1	./data/4P_R_R1.fq
 FORWARD_LIB_R2	./data/4P_R_R2.fq
-FORWARD_LIB_ODN	TGCGATAACACGCATTTCGCATAAG
+FORWARD_LIB_TAG	TGCGATAACACGCATTTCGCATAAG
 
 REVERSE_LIB_R1	./data/4P_L_R1.fq
 REVERSE_LIB_R2	./data/4P_L_R2.fq
-REVERSE_LIB_ODN	ATCTCTGAGCCTTATGCGAAATGCG
+REVERSE_LIB_TAG	ATCTCTGAGCCTTATGCGAAATGCG
 
+# off-targets not induced by RGNs 
 CTRL	./control.bed
 
 # grna information
@@ -23,6 +25,7 @@ BIN	/home/zhoujj/github/Tag-seq/bin
 ## tools
 FASTQC	/home/zhoujj/software/FastQC/fastqc
 AdapterRemoval	/home/zhoujj/software/adapterremoval/build/AdapterRemoval
+
 ## parameters
 ADAPTER	/home/zhoujj/github/Tag-seq/bin/adapters.txt
 MINLEN	50
@@ -32,12 +35,12 @@ READLEN	150
 ## aligner
 STAR	/home/zhoujj/software/STAR/bin/Linux_x86_64_static/STAR
 
-## index
+## index, hg19 and hg38
 GENOME	hg19
 INDEX	/home/zhoujj/data/hg19/star_index
 CHROMSIZE	/home/zhoujj/data/hg19/hg19.chrom.sizes
 
-## alignment parameters
+## alignment parameters (MAXINS: insert-size for flagment; THREAD: how many core will be used for this analysis)
 MAXINS	1000
 THREAD	16
 

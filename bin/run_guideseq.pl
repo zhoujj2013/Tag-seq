@@ -42,8 +42,8 @@ mkdir $conf{OUTDIR} unless(-d "$conf{OUTDIR}");
 if($step eq "all" || $step eq "create_makefile"){
 # create sample.lst
 open OUT,">","$conf{OUTDIR}/sample.lst" || die $!;
-print OUT "$conf{PREFIX}_plus\t$conf{FORWARD_LIB_R1}\t$conf{FORWARD_LIB_R2}\tforward\t$conf{FORWARD_LIB_ODN}\n";
-print OUT "$conf{PREFIX}_minus\t$conf{REVERSE_LIB_R1}\t$conf{REVERSE_LIB_R2}\treverse\t$conf{REVERSE_LIB_ODN}\n";
+print OUT "$conf{PREFIX}_plus\t$conf{FORWARD_LIB_R1}\t$conf{FORWARD_LIB_R2}\tforward\t$conf{FORWARD_LIB_TAG}\n";
+print OUT "$conf{PREFIX}_minus\t$conf{REVERSE_LIB_R1}\t$conf{REVERSE_LIB_R2}\treverse\t$conf{REVERSE_LIB_TAG}\n";
 close OUT;
 
 # create gRNA.fa

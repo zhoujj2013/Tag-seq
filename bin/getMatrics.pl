@@ -27,7 +27,7 @@ exit(1);
 
 
 # for remove ODN
-print "Retrive reads with ODN\n";
+print "Retrive reads contain TAG sequence\n";
 print "\tFiltered_Tag\tTotal_Tag\tPassed_Tag\tPassRate\n";
 my @readsfilteredODN;
 my @readstotalRaw;
