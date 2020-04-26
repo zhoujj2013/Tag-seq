@@ -1,6 +1,4 @@
 # Tag-seq
-
-Data analysis pipeline for Tag-seq.
 ----------
 
 ## Decription of Tag-seq data analysis
