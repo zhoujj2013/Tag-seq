@@ -93,7 +93,7 @@ Column 8: read count for minus strand in minus library
 
 Illustrate of off-targets sites and read count.
 
-![off-targets](https://upload-images.jianshu.io/upload_images/4180410-027aa959af051ea6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![off-targets](https://mycuhk-my.sharepoint.com/:i:/g/personal/1155013514_link_cuhk_edu_hk/EYmHMV0i_2pItS3Fg4cKiSwB6euBCjjbU274pJkmzFsZiw?e=S4VAin)
 
 #### 4. Read counts across sgRNA in target and off-target sites
 
