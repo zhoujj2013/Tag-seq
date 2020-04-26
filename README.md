@@ -112,6 +112,6 @@ The running time of Tag-seq depends on the size of sequencing depth (For 30M fla
 
 ## Please cite
 
-1. xxxx Tag-seq (underreview)
+1. xxxx Tag-seq (submitted)
 
 
