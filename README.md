@@ -97,7 +97,7 @@ Illustrate of off-targets sites and read count.
 
 #### 4. Read counts across sgRNA in target and off-target sites
 
-![sites](https://upload-images.jianshu.io/upload_images/4180410-0704cd667d260aa6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240) 
+![sites](http://120.78.148.57/tagseq/sites.png) 
 
 #### 5. Global view of target and off-target sites
 
