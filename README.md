@@ -1,7 +1,5 @@
 # Tag-seq
 
-----------
-
 ## Decription of Tag-seq data analysis
 
 For Tag-seq data analysis, we retained fragments that contain an intact Tag at the beginning of read2 (second of pair). Then, reads were mapped to the reference genome (hg19) using STAR2 after quality filtering, then PCR duplications were removed using UMI-tools. To identify candidate DSBs, the start mapping positions were grouped if the distance among them is less than 10 bps, resulting editing hotspots induced by RGNs. Then, the peaks with sufficient reads were detected in RGNs hotspot. Furthermore, the peaks with reads mapping to both + and - strands, or the same strand but amplified with both forward and reverse tag-specific primers, are flagged as sites of potential DSBs. The flanking regions of potential DSBs match gRNA identified as on-target site using a Smith-Waterman local-alignment algorithm. Identified off-targets sorted by Tag-seq read count are annotated in a final output table and visualize as a pdf file.
