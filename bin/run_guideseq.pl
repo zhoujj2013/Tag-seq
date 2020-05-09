@@ -131,6 +131,7 @@ if($conf{GENOME} eq "hg19"){
 	`cp $conf{BIN}/RIdeogram/data/human_genedensity.hg38.txt ./genedensity.txt`;
 }
 `perl $conf{BIN}/RIdeogram/prepare_target_offtarget_for_Rideogram.pl ../$conf{PREFIX}.all.sites.merged.confirmed ../$conf{PREFIX}.parsing_water_for_visualization.offtarget.bed > ./offtargets.txt`;
+`ulimit -s 16384`;
 `Rscript $conf{BIN}/RIdeogram//run_RIdeogram.R offtargets.txt $conf{PREFIX} > RIdeogram.log 2>RIdeogram.err`;
 chdir "..";
 
