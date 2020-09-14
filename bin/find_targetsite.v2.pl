@@ -16,7 +16,7 @@ sub usage {
 
         This script detect DNA editing site by Tag-seq.
         Author: zhoujj2013\@gmail.com 
-        Usage: $0 <t_site_plus_plus_f> <t_site_plus_minus_f> <t_site_minus_plus_f> <t_site_minus_minus_f> xx.control.bed grna_f prefix
+        Usage: $0 <t_site_plus_plus_f> <t_site_plus_minus_f> <t_site_minus_plus_f> <t_site_minus_minus_f> xx.control.bed grna_f pam blacklist_f prefix
 	
 	Example:
 	t_site_plus_plus_f: t_site_plus_plus.proximal.sorted
@@ -26,21 +26,26 @@ print "$usage";
 exit(1);
 };
 
+############## Get input parameters ##############
 my $t_site_plus_plus_f=shift;
 my $t_site_plus_minus_f=shift;
 my $t_site_minus_plus_f=shift;
 my $t_site_minus_minus_f=shift;
 
 my $bg_f = shift;
-# this part will replaced by a bed file derive from a specific cellline.
-#my $c_site_plus_plus_f=shift;
-#my $c_site_plus_minus_f=shift;
-#my $c_site_minus_plus_f=shift;
-#my $c_site_minus_minus_f=shift;
 
 my $grna_f=shift;
-my $prefix=shift;
+my $pam = shift;
+my $blacklist_f=shift;
 
+my $ref = shift;
+my $chrom_size = shift;
+
+my $prefix=shift;
+############## parameters end ####################
+
+
+##################################################
 # merge nearby editting sites
 my %tcount;
 foreach my $f (($t_site_plus_plus_f,$t_site_plus_minus_f,$t_site_minus_plus_f,$t_site_minus_minus_f)){
@@ -58,7 +63,7 @@ open IN,"$f" || die $!;
 # this is an important cutoff, I will test 5bp and 10bp
 `bedtools merge -d 10 -c 4 -o collapse -i $prefix.all.sites.bed > $prefix.all.sites.merged`;
 
-open OUT,">","$prefix.all.sites.merged.confirmed" || die $!;
+open OUT,">","$prefix.all.sites.merged.confirmed.raw" || die $!;
 open IN,"$prefix.all.sites.merged" || die $!;
 while(<IN>){
 	chomp;
@@ -79,27 +84,43 @@ while(<IN>){
 		$c{$index} = $c{$index} + $tcount{$id};
 	}
 
-	# this is the filtering scheme
-	if(($c{"plus_plus"} >= 5 and $c{'plus_minus'} >= 5) or ($c{'minus_plus'} >= 5 and $c{'minus_minus'} >= 5)){
+	# this is the filtering scheme (old)
+	#if(($c{"plus_plus"} >= 5 and $c{'plus_minus'} >= 5) or ($c{'minus_plus'} >= 5 and $c{'minus_minus'} >= 5)){
+	#	print OUT "$t[0]\t$start\t$end\t$t[3]\t$c{'plus_plus'}\t$c{'plus_minus'}\t$c{'minus_plus'}\t$c{'minus_minus'}\n";
+	#}elsif(($c{"plus_plus"} >= 5 or $c{'plus_minus'} >= 5) and ($c{'minus_plus'} >= 5 or $c{'minus_minus'} >= 5)){
+	#	print OUT "$t[0]\t$start\t$end\t$t[3]\t$c{'plus_plus'}\t$c{'plus_minus'}\t$c{'minus_plus'}\t$c{'minus_minus'}\n";
+	#}
+	# this is the filtering scheme (new)
+	my @count = ($c{"plus_plus"}, $c{'plus_minus'}, $c{'minus_plus'}, $c{'minus_minus'});
+	my $flag = 0;
+	foreach my $count (@count){
+		if($count > 0){
+			$flag = $flag + 1;
+		}
+	}
+	if($flag >= 2){
 		print OUT "$t[0]\t$start\t$end\t$t[3]\t$c{'plus_plus'}\t$c{'plus_minus'}\t$c{'minus_plus'}\t$c{'minus_minus'}\n";
-	}elsif(($c{"plus_plus"} >= 5 or $c{'plus_minus'} >= 5) and ($c{'minus_plus'} >= 5 or $c{'minus_minus'} >= 5)){
-		print OUT "$t[0]\t$start\t$end\t$t[3]\t$c{'plus_plus'}\t$c{'plus_minus'}\t$c{'minus_plus'}\t$c{'minus_minus'}\n";
-	}	
+	}
 	#print Dumper(\%c);
 	#print OUT "$t[0]\t$start\t$end\t$t[3]\t$c{'plus_plus'}\t$c{'plus_minus'}\t$c{'minus_plus'}\t$c{'minus_minus'}\n";
 }
 close IN;
 close OUT;
+############### merged end ##################
 
+
+############################################
+# filtering blacklist
+`bedtools intersect -a $prefix.all.sites.merged.confirmed.raw -b $blacklist_f -v > $prefix.all.sites.merged.confirmed`;
 
 # Filtering sites overlap with Control sample. This part is not well designed, currently.
+# extend the sequence
 # 2020/2/27 zhoujj2013@gmail.com
-#
-`bedtools slop -i $prefix.all.sites.merged.confirmed -g /home/zhoujj/data/hg19/hg19.chrom.sizes -b 50 > $prefix.all.sites.merged.confirmed.ext.raw.bed`;
+`bedtools slop -i $prefix.all.sites.merged.confirmed -g $chrom_size -b 50 > $prefix.all.sites.merged.confirmed.ext.raw.bed`;
 `bedtools intersect -a $prefix.all.sites.merged.confirmed.ext.raw.bed -b $bg_f -v > $prefix.all.sites.merged.confirmed.ext.bed`;
 
-# align to find the targeted site
-`bedtools getfasta -fi /home/zhoujj/data/hg19/hg19.fa -bed $prefix.all.sites.merged.confirmed.ext.bed > $prefix.all.sites.merged.confirmed.ext.fa`;
+# get fasta sequence for the targeted sites
+`bedtools getfasta -fi $ref -bed $prefix.all.sites.merged.confirmed.ext.bed > $prefix.all.sites.merged.confirmed.ext.fa`;
 open OUT,">","$prefix.all.sites.merged.confirmed.ext.rev.fa" || die $!;
 open IN,"$prefix.all.sites.merged.confirmed.ext.fa" || die $!;
 $/ = ">";<IN>;$/ = "\n";
@@ -120,6 +141,7 @@ while(<IN>){
 close IN;
 close OUT;
 
+################################################
 # keep origin sgRNA for better visualization
 open IN,"$grna_f" || die $!;
 #open OUT,">","./grna_rev_com.fa" || die $!;
@@ -140,43 +162,62 @@ close IN;
 #$grna_f = "./grna_rev_com.fa";
 
 # index
-`perl /home/zhoujj/project/02guide_seq/bin/replace_id.pl $prefix.all.sites.merged.confirmed.ext.fa > $prefix.all.sites.merged.confirmed.ext.renamed.fa 2>$prefix.all.sites.merged.confirmed.ext.renamed.index`;
-`perl /home/zhoujj/project/02guide_seq/bin/replace_id.pl $prefix.all.sites.merged.confirmed.ext.rev.fa > $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa 2>$prefix.all.sites.merged.confirmed.ext.rev.renamed.index`;
+`perl $Bin/replace_id.pl $prefix.all.sites.merged.confirmed.ext.fa > $prefix.all.sites.merged.confirmed.ext.renamed.fa 2>$prefix.all.sites.merged.confirmed.ext.renamed.index`;
+`perl $Bin/replace_id.pl $prefix.all.sites.merged.confirmed.ext.rev.fa > $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa 2>$prefix.all.sites.merged.confirmed.ext.rev.renamed.index`;
 
 # align
-`/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.renamed.fa -gapopen 10 -gapextend 0.5 -outfile $prefix.align.water`;
-`/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa -gapopen 10 -gapextend 0.5 -outfile $prefix.align.rev.water`;
+`/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.renamed.fa -gapopen 100 -gapextend 0.5 -outfile $prefix.align.water`;
+`/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa -gapopen 100 -gapextend 0.5 -outfile $prefix.align.rev.water`;
+########### alignment end ########################
 
-# retrive alignment information and recover the coordinates
-`perl /home/zhoujj/project/02guide_seq/bin/parsing_water.pl $prefix.align.water $prefix.all.sites.merged.confirmed.ext.renamed.index > $prefix.align.water.result`;
-`perl /home/zhoujj/project/02guide_seq/bin/parsing_water.pl $prefix.align.rev.water $prefix.all.sites.merged.confirmed.ext.rev.renamed.index > $prefix.align.water.rev.result`;
+##################################################
+## process alignments with gaps
+`/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.renamed.fa -gapopen 10 -gapextend 0.5 -outfile $prefix.align.water.gap`;
+`/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa -gapopen 10 -gapextend 0.5 -outfile $prefix.align.rev.water.gap`;
 
-## recover the coordinates
-`perl /home/zhoujj/project/02guide_seq/bin/recover_coor.pl $prefix.align.water.result $prefix.all.sites.merged.confirmed.ext.bed $prefix.all.sites.merged.confirmed.ext.renamed.index > $prefix.clustered.region.ext.align.bed`;
-`perl /home/zhoujj/project/02guide_seq/bin/recover_coor.pl $prefix.align.water.result $prefix.all.sites.merged.confirmed.ext.bed $prefix.all.sites.merged.confirmed.ext.rev.renamed.index > $prefix.clustered.region.ext.rev.align.bed`;
+# parse gap information
+`perl $Bin/parsing_water_for_gap_mapping.v2.pl $prefix.align.water.gap $prefix.align.rev.water.gap $prefix.all.sites.merged.confirmed.ext.renamed.fa $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa $prefix.all.sites.merged.confirmed.ext.renamed.index $prefix.all.sites.merged.confirmed.ext.rev.renamed.index $ref $grna > ./$prefix.parsing_water_for_visualization.offtarget.gap.raw.bed`;
+`perl $Bin/get_mapped_sites4gaps.pl $prefix.parsing_water_for_visualization.offtarget.gap.raw.bed $prefix.all.sites.merged.confirmed.ext.fa $prefix.all.sites.merged.confirmed.ext.rev.fa $prefix.all.sites.merged.confirmed.ext.bed > $prefix.parsing_water_for_visualization.offtarget.gap.bed`;
+########### end ###################################
 
-# draw
-`perl /home/zhoujj/project/02guide_seq/bin/parsing_water_for_visualization.pl $prefix.align.water $prefix.align.rev.water $prefix.all.sites.merged.confirmed.ext.renamed.fa $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa $prefix.all.sites.merged.confirmed.ext.renamed.index $prefix.all.sites.merged.confirmed.ext.rev.renamed.index $grna $grna_length > $prefix.parsing_water_for_visualization.txt`;
+###################################################
+## retrive alignment information and recover the coordinates
+#`perl /home/zhoujj/project/02guide_seq/bin/parsing_water.pl $prefix.align.water $prefix.all.sites.merged.confirmed.ext.renamed.index > $prefix.align.water.result`;
+#`perl /home/zhoujj/project/02guide_seq/bin/parsing_water.pl $prefix.align.rev.water $prefix.all.sites.merged.confirmed.ext.rev.renamed.index > $prefix.align.water.rev.result`;
+#
+### recover the coordinates
+#`perl /home/zhoujj/project/02guide_seq/bin/recover_coor.pl $prefix.align.water.result $prefix.all.sites.merged.confirmed.ext.bed $prefix.all.sites.merged.confirmed.ext.renamed.index > $prefix.clustered.region.ext.align.bed`;
+#`perl /home/zhoujj/project/02guide_seq/bin/recover_coor.pl $prefix.align.water.result $prefix.all.sites.merged.confirmed.ext.bed $prefix.all.sites.merged.confirmed.ext.rev.renamed.index > $prefix.clustered.region.ext.rev.align.bed`;
+############## the old version ####################
 
-#print "perl /home/zhoujj/project/02guide_seq/bin/prepare_for_visualization.pl $prefix.3rd.confirmed.final.ext25.renamed.index $prefix.3rd.confirmed.final.ext25.bed $prefix.parsing_water_for_visualization.txt > $prefix.parsing_water_for_visualization.offtarget\n";
+###################################################
+# process alignments without gaps 
+`perl $Bin/parsing_water_for_visualization.pl $prefix.align.water $prefix.align.rev.water $prefix.all.sites.merged.confirmed.ext.renamed.fa $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa $prefix.all.sites.merged.confirmed.ext.renamed.index $prefix.all.sites.merged.confirmed.ext.rev.renamed.index $grna $grna_length > $prefix.parsing_water_for_visualization.txt`;
 
-`perl /home/zhoujj/project/02guide_seq/bin/prepare_for_visualization.v2.pl $prefix.all.sites.merged.confirmed.ext.renamed.index $prefix.all.sites.merged.confirmed.ext.bed $prefix.parsing_water_for_visualization.txt > $prefix.parsing_water_for_visualization.offtarget.raw`;
+`perl $Bin/prepare_for_visualization.v2.pl $prefix.all.sites.merged.confirmed.ext.renamed.index $prefix.all.sites.merged.confirmed.ext.bed $prefix.parsing_water_for_visualization.txt > $prefix.parsing_water_for_visualization.offtarget.raw`;
 
 # merge identical target site
-`perl /home/zhoujj/project/02guide_seq/bin/merge_identical_sites.pl $prefix.parsing_water_for_visualization.offtarget.raw > $prefix.parsing_water_for_visualization.offtarget`;
+`perl $Bin/merge_identical_sites.pl $prefix.parsing_water_for_visualization.offtarget.raw > $prefix.parsing_water_for_visualization.offtarget`;
 
-#`sed '1d' $prefix.parsing_water_for_visualization.offtarget | cut -f 1-3,4,5,12,22,33 | bedtools sort -i - | sort -k6nr > $prefix.parsing_water_for_visualization.offtarget.bed`;
-#`sed '1d' $prefix.parsing_water_for_visualization.offtarget | cut -f 1-3,4,12,22,33 | perl -ne 'chomp; my \@t = split /\t/; \$t[1] = \$t[1] + 1; \$t[2] = \$t[2] + 1; print join "\\t",\@t; print "\n";' | bedtools sort -i - | sort -k5nr > $prefix.parsing_water_for_visualization.offtarget.bed`;
 `sed '1d' $prefix.parsing_water_for_visualization.offtarget | cut -f 1-3,4,12,22,33,34 | bedtools sort -i - | sort -k5nr > $prefix.parsing_water_for_visualization.offtarget.bed`;
+################# end ############################
+
+##################################################
+# combine the nongap alignment and gap alignment
+##################################################
+# for record the detail information
+`perl $Bin/combine_nongaps_gaps.pl $prefix.parsing_water_for_visualization.offtarget.bed $prefix.parsing_water_for_visualization.offtarget.gap.bed > $prefix.parsing_water_for_visualization.offtarget.combined.bed`;
+
+# for final visualization
+`perl $Bin/generate_gap_visualization.pl ./$prefix.parsing_water_for_visualization.offtarget.gap.raw.bed ./$prefix.parsing_water_for_visualization.offtarget.gap.bed ./$prefix.parsing_water_for_visualization.offtarget.bed > ./$prefix.parsing_water_for_visualization.offtarget.combined.forVis.bed`;
+################### end ##########################
 
 
-#/home/zhoujj/project/02guide_seq/bin/parsing_water_for_visualization.pl
+################ visualization ###################
 mkdir "./$prefix.drawTargetsite" unless(-d "./$prefix.drawTargetsite");
 
 #print "python /home/zhoujj/software/guideseq/guideseq/guideseq.py visualize --infile $prefix.parsing_water_for_visualization.offtarget --outfolder $prefix.drawTargetsite/ > $prefix.drawTargetsite/$prefix.log 2> $prefix.rawTargetsite/$prefix.err\n";
 
-#`python /home/zhoujj/software/guideseq/guideseq/guideseq.py visualize --infile $prefix.parsing_water_for_visualization.offtarget --outfolder $prefix.drawTargetsite/ > $prefix.drawTargetsite/$prefix.log 2> $prefix.drawTargetsite/$prefix.err`;
-`python /home/zhoujj/software/guideseq/guideseq/visualization.py $prefix.parsing_water_for_visualization.offtarget $prefix.drawTargetsite/$prefix\_offtargets $prefix`;
-
+`python $Bin/visualization.py --identified_file $prefix.parsing_water_for_visualization.offtarget.combined.forVis.bed --outfile $prefix.drawTargetsite/$prefix\_offtargets --title $prefix --PAM $pam`;
 `rsvg-convert -f pdf -o $prefix.drawTargetsite/$prefix\_offtargets.pdf $prefix.drawTargetsite/$prefix\_offtargets.svg`;
-
+##################### end #######################

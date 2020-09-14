@@ -53,16 +53,21 @@ gunzip hg19.fa.gz
 
 If you have obtained the reference genome, STAR index, you can run test to examine whether the package works well (the test dataset is placed in ./test directory within Tag-seq).
 
-Tag-seq requires a configure file containing paths of input files, sgRNA, Tag primers and genome etc. (See [config.TEST.txt](https://github.com/zhoujj2013/Tag-seq/blob/master/test/config.TEST.txt) for more details.)
+Tag-seq requires a [sgrna.lst](https://github.com/zhoujj2013/Tag-seq/blob/master/test/sgrna.lst) and a configure file containing paths of input files, sgRNA, Tag primers and genome etc. (See [config.TEST.txt](https://github.com/zhoujj2013/Tag-seq/blob/master/test/config.TEST.txt) for more details.)
 
 ```
 cd test
 
-# run 
+# run
+########## the content of work.sh #########
+# gunzip data/*.fq.gz
+# perl ../bin/run_guideseq.pl config.TEST.txt all > config.TEST.log 2>config.TEST.err
+###########################################
 sh work.sh
 
 # around 30 mins.
-# you can check the report in out.XXX/find.target/.
+# you can check the report in out.XXX/sgrna_id.find.target/.
+# you can identify off-targets for multiple sgRNA simultaneously.
 
 ```
 ### Result
@@ -112,5 +117,3 @@ The running time of Tag-seq depends on the size of sequencing depth (For 30M fla
 ## Please cite
 
 1. xxxx Tag-seq (submitted)
-
-

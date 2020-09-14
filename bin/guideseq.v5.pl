@@ -13,7 +13,7 @@ use Cwd qw(abs_path);
 sub usage {
         my $usage = << "USAGE";
 
-        This script is designed for TAG-seq analysis (not including DNA-seq based variant calling).
+        This script is designed for TAG-seq analysis (not including offtarget site identification).
         Author: zhoujj2013\@gmail.com 
         Usage: $0 <config.txt>
 
@@ -71,7 +71,7 @@ while(<IN>){
 		$r2 = abs_path($t[1]);
 	}
 		
-	## QC
+	## QC start
 	make_path "$out/$id/00datafilter";
 	my $encode_type = `perl $conf{BIN}/phredDetector.pl $r1`;
 	my $filter_cutoff = 5;
@@ -91,7 +91,6 @@ while(<IN>){
 	# remove ODN
 	$mk .= "00rmODN.finished: $r1 $r2\n";
 	$mk .= "\tperl $conf{BIN}/remove_ODN.pl $r1 $r2 $tag_rev_comp $out/$id/00datafilter $id > $out/$id/00datafilter/$id.rmODN.log 2> $out/$id/00datafilter/$id.rmODN.err && touch 00rmODN.finished\n";
-	#$mk .= "\tperl $conf{BIN}/remove_ODN.pl $out/$id/00datafilter/$id.Trim.R1.fq $out/$id/00datafilter/$id.Trim.R2.fq $tag_rev_comp > $out/$id/00datafilter/$id.Trim.rmODN.R2.fq 2> $out/$id/00datafilter/$id.Trim.rmODN.R1.fq && touch 00rmODN.finished\n";
 	$all .= "00rmODN.finished ";
 	
 	$r1 = "$out/$id/00datafilter/$id.rmODN.R1.fq";
@@ -99,7 +98,6 @@ while(<IN>){
 
 	$mk .= "00trim.finished: 00rmODN.finished\n";	
 	$mk .= "\t$conf{AdapterRemoval} --qualitybase $encode_type  --file1 $r1 --file2 $r2 --settings  $out/$id/00datafilter/$id.adapterRemoval.setting --output1 $out/$id/00datafilter/$id.Trim.R1.fq --output2 $out/$id/00datafilter/$id.Trim.R2.fq --singleton $out/$id/00datafilter/$id.Single.fq --discarded $out/$id/00datafilter/$id.Discarded.fq --minlength $conf{MINLEN} --trimns --trimqualities --minquality $filter_cutoff --trimwindows 15 --threads $conf{THREAD} --adapter-list $conf{ADAPTER} > $out/$id/00datafilter/$id.trim.log 2>$out/$id/00datafilter/$id.trim.err && touch 00trim.finished\n";
-	#$mk .= "\t$Bin/Ktrim.v2.3 -a $r1 -b $r2 -o $out/$id/00datafilter/$id.Trim -5 AAAAAAAAAAAAAAAAAAAAAAAAAAA -3 AAAAAAAAAAAAAAAAAAAAAAAAAAA > $out/$id/00datafilter/$id.trim.log 2>$out/$id/00datafilter/$id.trim.err && touch 00trim.finished\n";
 	$all .= "00trim.finished ";
 
 	# remove UMIs
@@ -110,18 +108,9 @@ while(<IN>){
 	$mk .= "00fastqc.finished: 00rmumis.finished\n";
 	$mk .= "\t$conf{FASTQC} --threads $conf{THREAD} -f fastq -o $out/$id/00datafilter/ $out/$id/00datafilter/$id.Trim.R1.fq $out/$id/00datafilter/$id.Trim.R2.fq > /dev/null 2>/dev/null && touch 00fastqc.finished\n";
 	$all .= "00fastqc.finished ";
-	
-	#if($seq_strand eq "forward"){
-	#	$mk .= "00strip.finished: 00trim.finished\n";
-	#	$mk .= "\tperl $conf{BIN}/forward.pl $out/$id/00datafilter/$id.Trim.R2.fq > $out/$id/00datafilter/$id.Trim.strip.fq 2>/dev/null && perl $conf{BIN}/count_fastq_len.pl $out/$id/00datafilter/$id.Trim.strip.fq > $out/$id/00datafilter/$id.insert_size && Rscript $conf{BIN}/count_fastq_len_plot.r $out/$id/00datafilter/$id.insert_size && touch 00strip.finished\n";
-	#	$all .= "00strip.finished ";
-	#}elsif($seq_strand eq "reverse"){
-	#	$mk .= "00strip.finished: 00trim.finished\n";
-	#	$mk .= "\tperl $conf{BIN}/reverse.pl $out/$id/00datafilter/$id.Trim.R2.fq > $out/$id/00datafilter/$id.Trim.strip.fq 2>/dev/null && perl $conf{BIN}/count_fastq_len.pl $out/$id/00datafilter/$id.Trim.strip.fq > $out/$id/00datafilter/$id.insert_size && Rscript $conf{BIN}/count_fastq_len_plot.r $out/$id/00datafilter/$id.insert_size && touch 00strip.finished\n";
-	#	$all .= "00strip.finished ";
-	#}
+	## QC end ##
 		
-	## alignment
+	## alignment start
 	#my $single = "$out/$id/00datafilter/$id.Single.fq";
 	#my $discarded = "$out/$id/00datafilter/$id.Discarded.fq";
 	my $clear_r1 = "$out/$id/00datafilter/$id.Trim.R1.umis.fq";
@@ -134,61 +123,66 @@ while(<IN>){
 	# take care of --alignIntronMax 50 --outFilterScoreMinOverLread 0.5
 	# this is a risk parameters
 	#
-	$mk .= "\t$conf{STAR} --genomeDir $conf{INDEX} --runThreadN $thread --readFilesIn $clear_r1 $clear_r2 --outFileNamePrefix $out/$id/01alignment/$id. --outSAMtype BAM SortedByCoordinate --outReadsUnmapped Fastx --alignIntronMax 50 --outFilterScoreMinOverLread 0.5 1>$out/$id/01alignment/$id.star.log 2>$out/$id/01alignment/$id.star.err && $conf{SAMTOOLS} index $out/$id/01alignment/$id.Aligned.sortedByCoord.out.bam && touch 01align.finished\n";
+	$mk .= "\t$conf{STAR} --genomeDir $conf{INDEX} --runThreadN $thread --readFilesIn $clear_r1 $clear_r2 --outFileNamePrefix $out/$id/01alignment/$id. --outSAMtype BAM SortedByCoordinate --outReadsUnmapped Fastx --alignIntronMax 50 --outFilterScoreMinOverLread 0.5 1>$out/$id/01alignment/$id.star.log 2>$out/$id/01alignment/$id.star.err ";
+	$mk .= "&& $conf{SAMTOOLS} index $out/$id/01alignment/$id.Aligned.sortedByCoord.out.bam ";
+	$mk .= "&& touch 01align.finished\n";
 	$all .= "01align.finished ";
 
 	$mk .= "01rmdup.finished: 01align.finished\n";
 	# rational: https://cgatoxford.wordpress.com/2015/08/14/unique-molecular-identifiers-the-problem-the-solution-and-the-proof/
 	# https://genome.cshlp.org/content/early/2017/01/18/gr.209601.116.abstract
-	$mk .= "\t$conf{umi_tools} dedup -I $out/$id/01alignment/$id.Aligned.sortedByCoord.out.bam --paired -S $out/$id/01alignment/$id.Aligned.sortedByCoord.out.dedup.bam --output-stats=$out/$id/01alignment/$id.dedup > $out/$id/01alignment/$id.dedup.log 2>$out/$id/01alignment/$id.dedup.err && $conf{SAMTOOLS} flagstat $out/$id/01alignment/$id.Aligned.sortedByCoord.out.dedup.bam > $out/$id/01alignment/$id.Aligned.sortedByCoord.out.dedup.bam.flagstat && touch 01rmdup.finished\n";
-	#$mk .= "\tjava -jar $conf{PICARD} MarkDuplicates I=$out/$id/01alignment/$id.Aligned.sortedByCoord.out.bam O=$out/$id/01alignment/$id.sorted.rmdup.bam M=$out/$id/01alignment/$id.rmdup.log REMOVE_DUPLICATES=true ASSUME_SORTED=true TMP_DIR=./ >$out/$id/01alignment/rmdup.log 2>$out/$id/01alignment/rmdup.err && $conf{SAMTOOLS} index $out/$id/01alignment/$id.sorted.rmdup.bam && touch 01rmdup.finished\n";
+	$mk .= "\t$conf{umi_tools} dedup -I $out/$id/01alignment/$id.Aligned.sortedByCoord.out.bam --paired -S $out/$id/01alignment/$id.Aligned.sortedByCoord.out.dedup.bam --output-stats=$out/$id/01alignment/$id.dedup > $out/$id/01alignment/$id.dedup.log 2>$out/$id/01alignment/$id.dedup.err ";
+	# get alignment statistics
+	$mk .= "&& $conf{SAMTOOLS} flagstat $out/$id/01alignment/$id.Aligned.sortedByCoord.out.dedup.bam > $out/$id/01alignment/$id.Aligned.sortedByCoord.out.dedup.bam.flagstat ";
+	$mk .= "&& touch 01rmdup.finished\n";
 	$all .= "01rmdup.finished ";
+	## alignment end ##
 
+	## detect potential offtarget sites --- start
+	#  Just find potential offtarget sites with read alignment signal.
 	make_path "$out/$id/02potentialTargets";
 	$mk .= "02potentialTargets.finished: 01rmdup.finished\n";
 	# ref: https://broadinstitute.github.io/picard/explain-flags.html
 	# add -q 30 to filter low quality mapping in repeat region
 	# remove perl $conf{BIN}/filter8odn.v4.pl $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.sam $tag $seq_strand > $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.sam
 	# NOTE: import setting for detect peaks, we use 10bp windows for calculating coverage, the minimue distance for detect peaks, this method can avoid replicately calculate the coverage. 2019/12/11
-	$mk .= "\t$conf{SAMTOOLS} view -f 128 -q 30 $out/$id/01alignment/$id.Aligned.sortedByCoord.out.dedup.bam > $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.sam && $conf{SAMTOOLS} view -H $out/$id/01alignment/$id.Aligned.sortedByCoord.out.bam | cat - $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.sam | $conf{SAMTOOLS} view -b - > $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.bam && $conf{SAMTOOLS} flagstat $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.bam > $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.bam.flagstat && $conf{BEDTOOLS} bamtobed -i $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.bam > $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.bed && perl $conf{BIN}/extractLoci.pl $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.bed > $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.loci.bed && $conf{BEDTOOLS} sort -i $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.loci.bed > $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.loci.sorted.bed && $conf{BEDTOOLS} merge -d 10 -c 4 -o count -i $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.loci.sorted.bed > $out/$id/02potentialTargets/$id.clustered.region.bed && $conf{BEDTOOLS} slop -i $out/$id/02potentialTargets/$id.clustered.region.bed -g $conf{CHROMSIZE} -b 10 > $out/$id/02potentialTargets/$id.clustered.region.extend10bp.bed && perl $conf{BIN}/replace_id_bed.pl $out/$id/02potentialTargets/$id.clustered.region.extend10bp.bed $id > $out/$id/02potentialTargets/$id.clustered.region.rpid.bed && $conf{BEDTOOLS} makewindows -b $out/$id/02potentialTargets/$id.clustered.region.rpid.bed -w 10 -s 1 -i srcwinnum > $out/$id/02potentialTargets/$id.clustered.region.rpid.wins.bed && perl $conf{BIN}/seperate_plus_minus.pl $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.loci.sorted.bed > $out/$id/02potentialTargets/$id.plus.bed 2>$out/$id/02potentialTargets/$id.minus.bed && $conf{bedops}/bedmap --echo --count --delim \'\\t\' $out/$id/02potentialTargets/$id.clustered.region.rpid.wins.bed $out/$id/02potentialTargets/$id.plus.bed > $out/$id/02potentialTargets/$id.plus.count.raw && perl $conf{BIN}/add_strand_flag.pl $out/$id/02potentialTargets/$id.plus.count.raw plus > $out/$id/02potentialTargets/$id.plus.count && $conf{bedops}/bedmap --echo --count --delim \'\\t\' $out/$id/02potentialTargets/$id.clustered.region.rpid.wins.bed $out/$id/02potentialTargets/$id.minus.bed > $out/$id/02potentialTargets/$id.minus.count.raw && perl $conf{BIN}/add_strand_flag.pl $out/$id/02potentialTargets/$id.minus.count.raw minus > $out/$id/02potentialTargets/$id.minus.count && python $conf{BIN}/detect.peaks.py $out/$id/02potentialTargets/$id.plus.count $out/$id/02potentialTargets/$id.minus.count 5 10 >$out/$id/02potentialTargets/$id.plus.proximal 2>$out/$id/02potentialTargets/$id.minus.proximal && $conf{BEDTOOLS} sort -i $out/$id/02potentialTargets/$id.plus.proximal > $out/$id/02potentialTargets/$id.plus.proximal.sorted.raw && $conf{BEDTOOLS} sort -i $out/$id/02potentialTargets/$id.minus.proximal > $out/$id/02potentialTargets/$id.minus.proximal.sorted.raw && perl $conf{BIN}/strand_nomalization.pl $out/$id/02potentialTargets/$id.minus.proximal.sorted.raw minus > $out/$id/02potentialTargets/$id.minus.proximal.sorted && perl $conf{BIN}/strand_nomalization.pl $out/$id/02potentialTargets/$id.plus.proximal.sorted.raw plus > $out/$id/02potentialTargets/$id.plus.proximal.sorted && touch 02potentialTargets.finished\n";
-	########### the result is stable ##########
-	# 5	102
-	# 10	101
-	# 20	99
-	# 30	99
-	# 40	99
-	# 50	98
-	# 100	97
-	# #########################################
+	# for manually, I change the target cutoff to 1 read supported.
+	$mk .= "\t$conf{SAMTOOLS} view -f 128 -q 30 $out/$id/01alignment/$id.Aligned.sortedByCoord.out.dedup.bam > $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.sam "; 
+	$mk .= "&& $conf{SAMTOOLS} view -H $out/$id/01alignment/$id.Aligned.sortedByCoord.out.bam | cat - $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.sam | $conf{SAMTOOLS} view -b - > $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.bam ";
+	$mk .= "&& $conf{SAMTOOLS} flagstat $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.bam > $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.bam.flagstat ";
+	$mk .= "&& $conf{BEDTOOLS} bamtobed -i $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.bam > $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.bed ";
+	$mk .= "&& perl $conf{BIN}/extractLoci.pl $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.bed > $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.loci.bed ";
+	$mk .= "&& $conf{BEDTOOLS} sort -i $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.loci.bed > $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.loci.sorted.bed ";
+	$mk .= "&& $conf{BEDTOOLS} merge -d 10 -c 4 -o count -i $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.loci.sorted.bed > $out/$id/02potentialTargets/$id.clustered.region.bed ";
+	$mk .= "&& $conf{BEDTOOLS} slop -i $out/$id/02potentialTargets/$id.clustered.region.bed -g $conf{CHROMSIZE} -b 10 > $out/$id/02potentialTargets/$id.clustered.region.extend10bp.bed ";
+	$mk .= "&& perl $conf{BIN}/replace_id_bed.pl $out/$id/02potentialTargets/$id.clustered.region.extend10bp.bed $id > $out/$id/02potentialTargets/$id.clustered.region.rpid.bed ";
+	$mk .= "&& $conf{BEDTOOLS} makewindows -b $out/$id/02potentialTargets/$id.clustered.region.rpid.bed -w 10 -s 1 -i srcwinnum > $out/$id/02potentialTargets/$id.clustered.region.rpid.wins.bed ";
+	$mk .= "&& perl $conf{BIN}/seperate_plus_minus.pl $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.loci.sorted.bed > $out/$id/02potentialTargets/$id.plus.bed 2>$out/$id/02potentialTargets/$id.minus.bed ";
+	$mk .= "&& $conf{bedops}/bedmap --echo --count --delim \'\\t\' $out/$id/02potentialTargets/$id.clustered.region.rpid.wins.bed $out/$id/02potentialTargets/$id.plus.bed > $out/$id/02potentialTargets/$id.plus.count.raw ";
+	$mk .= "&& perl $conf{BIN}/add_strand_flag.pl $out/$id/02potentialTargets/$id.plus.count.raw plus > $out/$id/02potentialTargets/$id.plus.count ";
+	$mk .= "&& $conf{bedops}/bedmap --echo --count --delim \'\\t\' $out/$id/02potentialTargets/$id.clustered.region.rpid.wins.bed $out/$id/02potentialTargets/$id.minus.bed > $out/$id/02potentialTargets/$id.minus.count.raw ";
+	$mk .= "&& perl $conf{BIN}/add_strand_flag.pl $out/$id/02potentialTargets/$id.minus.count.raw minus > $out/$id/02potentialTargets/$id.minus.count ";
+	$mk .= "&& python $conf{BIN}/detect.peaks.py $out/$id/02potentialTargets/$id.plus.count $out/$id/02potentialTargets/$id.minus.count 1 10 >$out/$id/02potentialTargets/$id.plus.proximal 2>$out/$id/02potentialTargets/$id.minus.proximal ";
+	$mk .= "&& $conf{BEDTOOLS} sort -i $out/$id/02potentialTargets/$id.plus.proximal > $out/$id/02potentialTargets/$id.plus.proximal.sorted.raw ";
+	$mk .= "&& $conf{BEDTOOLS} sort -i $out/$id/02potentialTargets/$id.minus.proximal > $out/$id/02potentialTargets/$id.minus.proximal.sorted.raw ";
+	$mk .= "&& perl $conf{BIN}/strand_nomalization.pl $out/$id/02potentialTargets/$id.minus.proximal.sorted.raw minus > $out/$id/02potentialTargets/$id.minus.proximal.sorted ";
+	$mk .= "&& perl $conf{BIN}/strand_nomalization.pl $out/$id/02potentialTargets/$id.plus.proximal.sorted.raw plus > $out/$id/02potentialTargets/$id.plus.proximal.sorted ";
+	$mk .= "&& touch 02potentialTargets.finished\n";
 	$all .= "02potentialTargets.finished ";
+	## detect potential offtarget sites --- end
 
-	# findTarget script has obsoleted. 2020/3/3
-	#make_path "$out/$id/03findTargets";
-	#$mk .= "03findTargets.finished: 02potentialTargets.finished\n";
-	#$mk .= "\t$conf{BEDTOOLS} slop -i $out/$id/02potentialTargets/$id.clustered.region.bed -g $conf{hg19}/hg19.chrom.sizes -b 25 > $out/$id/03findTargets/$id.clustered.region.ext25.bed && $conf{BEDTOOLS} getfasta -fi $conf{hg19}/hg19.fa -bed $out/$id/03findTargets/$id.clustered.region.ext25.bed > $out/$id/03findTargets/$id.clustered.region.ext25.fa && perl $conf{BIN}/replace_id.pl $out/$id/03findTargets/$id.clustered.region.ext25.fa > $out/$id/03findTargets/$id.clustered.region.ext25.renamed.fa 2>$out/$id/03findTargets/$id.clustered.region.ext25.renamed.index && $conf{water} -asequence $conf{GRNA} -bsequence $out/$id/03findTargets/$id.clustered.region.ext25.renamed.fa -gapopen 10 -gapextend 0.5 -outfile $out/$id/03findTargets/$id.align.water && perl $conf{BIN}/parsing_water.pl $out/$id/03findTargets/$id.align.water > $out/$id/03findTargets/$id.align.water.result && perl $conf{BIN}/recover_coor.pl $out/$id/03findTargets/$id.align.water.result $out/$id/03findTargets/$id.clustered.region.ext25.bed $out/$id/03findTargets/$id.clustered.region.ext25.renamed.index > $out/$id/03findTargets/$id.clustered.region.ext25.align.bed && touch 03findTargets.finished\n";
-	#$all .= "03findTargets.finished ";
-
+	## visualization --- start
 	make_path "$out/$id/03visual";
 	$mk .= "03visual.finished: 02potentialTargets.finished\n";
-	$mk .= "\tperl $conf{BIN}/loci2bdg.pl $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.loci.bed > $out/$id/03visual/$id.plus.bdg 2> $out/$id/03visual/$id.minus.bdg && $conf{BEDTOOLS} sort -i $out/$id/03visual/$id.minus.bdg > $out/$id/03visual/$id.minus.sorted.bdg && $conf{BEDTOOLS} sort -i $out/$id/03visual/$id.plus.bdg > $out/$id/03visual/$id.plus.sorted.bdg && $conf{BIN}/bedGraphToBigWig $out/$id/03visual/$id.minus.sorted.bdg $conf{CHROMSIZE} $out/$id/03visual/$id.minus.bw > $out/$id/03visual/$id.minus.bw.log 2> $out/$id/03visual/$id.minus.bw.err && $conf{BIN}/bedGraphToBigWig $out/$id/03visual/$id.plus.sorted.bdg $conf{CHROMSIZE} $out/$id/03visual/$id.plus.bw > $out/$id/03visual/$id.plus.bw.log 2> $out/$id/03visual/$id.plus.bw.err && touch 03visual.finished\n";
+	$mk .= "\tperl $conf{BIN}/loci2bdg.pl $out/$id/02potentialTargets/$id.Aligned.sortedByCoord.out.dedup.single.filtered.loci.bed > $out/$id/03visual/$id.plus.bdg 2> $out/$id/03visual/$id.minus.bdg ";
+	$mk .= "&& $conf{BEDTOOLS} sort -i $out/$id/03visual/$id.minus.bdg > $out/$id/03visual/$id.minus.sorted.bdg ";
+	$mk .= "&& $conf{BEDTOOLS} sort -i $out/$id/03visual/$id.plus.bdg > $out/$id/03visual/$id.plus.sorted.bdg ";
+	$mk .= "&& $conf{BIN}/bedGraphToBigWig $out/$id/03visual/$id.minus.sorted.bdg $conf{CHROMSIZE} $out/$id/03visual/$id.minus.bw > $out/$id/03visual/$id.minus.bw.log 2> $out/$id/03visual/$id.minus.bw.err ";
+	$mk .= "&& $conf{BIN}/bedGraphToBigWig $out/$id/03visual/$id.plus.sorted.bdg $conf{CHROMSIZE} $out/$id/03visual/$id.plus.bw > $out/$id/03visual/$id.plus.bw.log 2> $out/$id/03visual/$id.plus.bw.err ";
+	$mk .= "&& touch 03visual.finished\n";
 	$all .= "03visual.finished ";
+	## visualization --- end
 
-	## 04checkDSBs script has obsoleted, because the cell type speicific of DSBs. 2020/3/3
-	#make_path "$out/$id/04checkDSBs";
-	#$mk .= "04checkDSBs.finished: 03visual.finished\n";
-	#$mk .= "\t$conf{BEDTOOLS} intersect -a $out/$id/03findTargets/$id.clustered.region.ext25.align.bed -b $conf{BIN}/data/Miotic_DSBs.bed > $out/$id/04checkDSBs/$id.ol.Miotic_DSBs.bed && $conf{BEDTOOLS} intersect -a $out/$id/03findTargets/$id.clustered.region.ext25.align.bed -b $conf{BIN}/data/spontaneous_DSBs.bed > $out/$id/04checkDSBs/$id.ol.spontaneous_DSBs.bed && touch 04checkDSBs.finished\n";
-	#$all .= "04checkDSBs.finished ";
-
-	#make_path "$out/$id/06checkOverlap";
-	#$mk .= "06checkOverlap.finished: 04checkDSBs.finished\n";
-	#$mk .= "\t$conf{BEDTOOLS} intersect -a $out/$id/03findTargets/$id.clustered.region.ext25.align.bed -b $out/$id/04visual/$id.plus.sorted.bdg -wo > $out/$id/06checkOverlap/$id.potential.target.vs.plus.intersect && $conf{BEDTOOLS} intersect -a $out/$id/03findTargets/$id.clustered.region.ext25.align.bed -b $out/$id/04visual/$id.minus.sorted.bdg -wo > $out/$id/06checkOverlap/$id.potential.target.vs.minus.intersect && touch 06checkOverlap.finished\n";
-	#$all .= "06checkOverlap.finished ";
-
-	#make_path "$out/$id/07drawTargetsite";
-	#$mk .= "07drawTargetsite.finished: 06checkOverlap.finished\n";
-	#$mk .= "\tperl $conf{BIN}/parsing_water_for_visualization.pl $out/$id/03findTargets/$id.align.water $conf{GRNA_LENGTH} > $out/$id/07drawTargetsite/$id.parsing_water_for_visualization.txt && perl $conf{BIN}/prepare_for_visualization.pl $out/$id/03findTargets/$id.clustered.region.ext25.renamed.index $out/$id/03findTargets/$id.clustered.region.ext25.bed $out/$id/07drawTargetsite/$id.parsing_water_for_visualization.txt > $out/$id/07drawTargetsite/$id.parsing_water_for_visualization.offtarget && python $conf{guideseq}/guideseq/guideseq.py visualize --infile $out/$id/07drawTargetsite/$id.parsing_water_for_visualization.offtarget --outfolder $out/$id/07drawTargetsite/ > $out/$id/07drawTargetsite/$id.log 2> $out/$id/07drawTargetsite/$id.err && touch 07drawTargetsite.finished\n";
-	#$all .= "07drawTargetsite.finished ";
-	
 	make_path abs_path($conf{OUTDIR});
 	open OUT, ">$out/$id/makefile";
 	print OUT $all, "\n";
@@ -198,10 +192,6 @@ while(<IN>){
 	$mk = "";
 }
 close IN;
-
-# write the comparing part
-
-
 
 #########################
 sub load_conf

@@ -11,7 +11,7 @@ my $rv_renamed_index_f = shift;
 my $grna = shift; # grna fasta file
 my $ref_length = shift; # grna length
 
-my $pre_mismatch = 7;
+my $pre_mismatch = 6;
 
 # read in the index file, so that we can trace coordinates.
 # start
@@ -284,7 +284,9 @@ sub align{
         my @s2 = split //,$seq2;
         my $mismatch = 0;
         for(my $k = 0; $k < length($seq1); $k++){
-                if($s1[$k] ne $s2[$k]){
+		if($s1[$k] eq "N"){
+			next;
+		}elsif($s1[$k] ne $s2[$k]){
                         $mismatch++;
                 }
         }

@@ -8,11 +8,11 @@ REVERSE_LIB_R1	./data/4P_L_R1.fq
 REVERSE_LIB_R2	./data/4P_L_R2.fq
 REVERSE_LIB_TAG	ATCTCTGAGCCTTATGCGAAATGCG
 
-# off-targets not induced by RGNs 
+# off-targets not induced by RGNs. parameter: "bed file path" or "none".
 CTRL	./control.bed
 
 # grna information
-GRNA	TTTGGGGTGATCAGACCCAACAGCAGG
+GRNA	./sgrna.lst
 
 # Output directory
 OUTDIR	./out.TEST
@@ -38,6 +38,7 @@ STAR	/home/zhoujj/software/STAR/bin/Linux_x86_64_static/STAR
 ## index, hg19 and hg38
 GENOME	hg19
 INDEX	/home/zhoujj/data/hg19/star_index
+REF	/home/zhoujj/data/hg19/hg19.fa
 CHROMSIZE	/home/zhoujj/data/hg19/hg19.chrom.sizes
 
 ## alignment parameters (MAXINS: insert-size for flagment; THREAD: how many core will be used for this analysis)

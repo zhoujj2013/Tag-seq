@@ -37,8 +37,6 @@ def parseSitesFile(infile):
             bulge_offtarget_sequence = line_items[3]
             target_seq = line_items[4]
             realigned_target_seq = line_items[5]
-            counts = line_items[10].strip("\n").split(";")
-
             #print(realigned_target_seq)
             #print(no_bulge_offtarget_sequence.strip()) #+ "\t" + bulge_offtarget_sequence + "\t" + target_seq + "\t" + realigned_target_seq)
 
@@ -51,8 +49,7 @@ def parseSitesFile(infile):
                                    'bulged_seq': bulge_offtarget_sequence.strip(),
                                    'reads': int(offtarget_reads.strip()),
                                    'target_seq': target_seq.strip(),
-                                   'realigned_target_seq': realigned_target_seq.strip(),
-                                   'counts': counts
+                                   'realigned_target_seq': realigned_target_seq.strip()
                                    })
             #print no_bulge_offtarget_sequence.strip() #+ "\t" + bulge_offtarget_sequence + "\t" + target_seq + "\t" + realigned_target_seq
     offtargets = sorted(offtargets, key=lambda x: x['reads'], reverse=True)
@@ -98,7 +95,7 @@ def visualizeOfftargets(infile, outfile, title, PAM):
     offtargets, target_seq, total_seq = parseSitesFile(infile)
 
     # Initiate canvas
-    dwg = svgwrite.Drawing(outfile + '.svg', profile='full', size=(u'110%', 100 + (total_seq+3)*(box_size + 1)))
+    dwg = svgwrite.Drawing(outfile + '.svg', profile='full', size=(u'100%', 100 + total_seq*(box_size + 1)))
 
     if title is not None:
         # Define top and left margins
@@ -168,13 +165,8 @@ def visualizeOfftargets(infile, outfile, title, PAM):
         x = x_offset + i * box_size
         dwg.add(dwg.rect((x, y), (box_size, box_size), fill=colors[c]))
         dwg.add(dwg.text(c, insert=(x + 3, y + box_size - 3), fill='black', style="font-size:15px; font-family:Courier"))
-    
-    #dwg.add(dwg.text('Reads', insert=(x_offset + box_size * len(target_seq) + 16, y_offset + box_size - 3), style="font-size:15px; font-family:Courier"))
-    names = title.split(",")
-    offset_steps = 0
-    for n in names:
-        dwg.add(dwg.text(n, insert=(x_offset + box_size * len(target_seq) + 16 + offset_steps, y_offset + box_size - 3), style="font-size:15px; font-family:Courier"))
-        offset_steps = offset_steps + 96
+    dwg.add(dwg.text('Reads', insert=(x_offset + box_size * len(target_seq) + 16, y_offset + box_size - 3), style="font-size:15px; font-family:Courier"))
+
     # Draw aligned sequence rows
     y_offset += 1  # leave some extra space after the reference row
     line_number = 0  # keep track of plotted sequences
@@ -226,30 +218,23 @@ def visualizeOfftargets(infile, outfile, title, PAM):
                     dwg.add(dwg.text(c, insert=(x + 3, 2 * box_size + y - 3), fill='black', style="font-size:15px; font-family:Courier"))
                     k += 1
 
-        # added by jiajian, 20200913
-        offset_steps = 0
-        for c in seq['counts']:
-            reads_text = dwg.text(c, insert=(box_size * (len(target_seq) + 1) + 20 + offset_steps, y_offset + box_size * (j + 3) - 2), fill='black', style="font-size:15px; font-family:Courier")
-            offset_steps = offset_steps + 96
+        if no_bulge_offtarget_sequence == '' or bulge_offtarget_sequence == '':
+            reads_text = dwg.text(str(seq['reads']), insert=(box_size * (len(target_seq) + 1) + 20, y_offset + box_size * (line_number + 2) - 2),
+                                  fill='black', style="font-size:15px; font-family:Courier")
             dwg.add(reads_text)
-
-        #if no_bulge_offtarget_sequence == '' or bulge_offtarget_sequence == '':
-        #    reads_text = dwg.text(str(seq['reads']), insert=(box_size * (len(target_seq) + 1) + 20, y_offset + box_size * (line_number + 2) - 2),
-        #                          fill='black', style="font-size:15px; font-family:Courier")
-        #    dwg.add(reads_text)
-        #else:
-        #    reads_text = dwg.text(str(seq['reads']), insert=(box_size * (len(target_seq) + 1) + 20, y_offset + box_size * (line_number + 1) + 5),
-        #                          fill='black', style="font-size:15px; font-family:Courier")
-        #    dwg.add(reads_text)
-        #    reads_text02 = dwg.text(u"\u007D", insert=(box_size * (len(target_seq) + 1) + 7, y_offset + box_size * (line_number + 1) + 5),
-        #                          fill='black', style="font-size:23px; font-family:Courier")
-        #    dwg.add(reads_text02)
-
+        else:
+            reads_text = dwg.text(str(seq['reads']), insert=(box_size * (len(target_seq) + 1) + 20, y_offset + box_size * (line_number + 1) + 5),
+                                  fill='black', style="font-size:15px; font-family:Courier")
+            dwg.add(reads_text)
+            reads_text02 = dwg.text(u"\u007D", insert=(box_size * (len(target_seq) + 1) + 7, y_offset + box_size * (line_number + 1) + 5),
+                                  fill='black', style="font-size:23px; font-family:Courier")
+            dwg.add(reads_text02)
     # added by jiajian, 2020.09.13
+    offset_steps = 1
     copy_y = y_offset + box_size*(total_seq+1) + 5
-    copy_right_text = dwg.text("Author: zhoujj2013@gmail.com (*)", insert=(box_size * (len(target_seq) + 1) + 20 + offset_steps, copy_y + (offset_steps/96)*15 + 15), fill='black', style="font-size:15px; font-family:Courier")
+    copy_right_text = dwg.text("Author: zhoujj2013@gmail.com (*)", insert=(box_size * (len(target_seq) + 1) + 20 + offset_steps*15, copy_y + (offset_steps)*15 + 15), fill='black', style="font-size:15px; font-family:Courier")
     dwg.add(copy_right_text)
-    blank_line = dwg.text("Dr. Jiajian ZHOU @SMU.China ", insert=(box_size * (len(target_seq) + 1) + 20 + offset_steps, copy_y + (offset_steps/96)*15 + 15*3), fill='black', style="font-size:15px; font-family:Courier")
+    blank_line = dwg.text("Dr. Jiajian ZHOU @SMU.China ", insert=(box_size * (len(target_seq) + 1) + 20 + offset_steps*15, copy_y + (offset_steps)*15 + 15*3), fill='black', style="font-size:15px; font-family:Courier")
     dwg.add(blank_line)
     dwg.save()
 
