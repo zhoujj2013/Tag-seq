@@ -32,6 +32,14 @@ Tag-seq have been tested in CentOS release 7.4 (Linux OS 64 bit).
 git clone https://github.com/zhoujj2013/Tag-seq.git --depth 1
 ```
 
+
+### Install require python packages
+
+```
+cd ./Tag-seq
+pip install -r python.package.requirement.txt --user
+```
+
 ### Preparation
 
 Download reference genome and build index.
