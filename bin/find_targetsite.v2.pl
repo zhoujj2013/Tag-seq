@@ -209,6 +209,8 @@ close IN;
 `perl $Bin/combine_nongaps_gaps.pl $prefix.parsing_water_for_visualization.offtarget.bed $prefix.parsing_water_for_visualization.offtarget.gap.bed > $prefix.parsing_water_for_visualization.offtarget.combined.bed`;
 
 # for final visualization
+#print STDERR "perl $Bin/generate_gap_visualization.pl ./$prefix.parsing_water_for_visualization.offtarget.gap.raw.bed ./$prefix.parsing_water_for_visualization.offtarget.gap.bed ./$prefix.parsing_water_for_visualization.offtarget.bed > ./$prefix.parsing_water_for_visualization.offtarget.combined.forVis.bed\n";
+
 `perl $Bin/generate_gap_visualization.pl ./$prefix.parsing_water_for_visualization.offtarget.gap.raw.bed ./$prefix.parsing_water_for_visualization.offtarget.gap.bed ./$prefix.parsing_water_for_visualization.offtarget.bed > ./$prefix.parsing_water_for_visualization.offtarget.combined.forVis.bed`;
 ################### end ##########################
 
@@ -217,6 +219,8 @@ close IN;
 mkdir "./$prefix.drawTargetsite" unless(-d "./$prefix.drawTargetsite");
 
 #print "python /home/zhoujj/software/guideseq/guideseq/guideseq.py visualize --infile $prefix.parsing_water_for_visualization.offtarget --outfolder $prefix.drawTargetsite/ > $prefix.drawTargetsite/$prefix.log 2> $prefix.rawTargetsite/$prefix.err\n";
+
+#print "python $Bin/visualization.py --identified_file $prefix.parsing_water_for_visualization.offtarget.combined.forVis.bed --outfile $prefix.drawTargetsite/$prefix\_offtargets --title $prefix --PAM $pam\n";
 
 `python $Bin/visualization.py --identified_file $prefix.parsing_water_for_visualization.offtarget.combined.forVis.bed --outfile $prefix.drawTargetsite/$prefix\_offtargets --title $prefix --PAM $pam`;
 `rsvg-convert -f pdf -o $prefix.drawTargetsite/$prefix\_offtargets.pdf $prefix.drawTargetsite/$prefix\_offtargets.svg`;

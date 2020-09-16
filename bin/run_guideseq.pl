@@ -108,6 +108,8 @@ if($step eq "all" || $step eq "find_target"){
 		my $pam = $t[2];
 		$conf{PAM} = $pam;
 		
+		print STDERR "## Detect off-target sites for $id, sgRNA: $grna_seq, PAM:$pam. Start ... ##\n";
+
 		mkdir "$conf{OUTDIR}/$id.find.target" unless(-d "$conf{OUTDIR}/$id.find.target");
 		chdir "$conf{OUTDIR}/$id.find.target";
 
@@ -123,15 +125,15 @@ if($step eq "all" || $step eq "find_target"){
 		close OUT;
 
 		open OUT, ">", "run.sh" || die $!;
-		print OUT "perl $conf{BIN}/find_targetsite.v2.pl ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.plus.proximal.sorted ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.minus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.plus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.minus.proximal.sorted $conf{CTRL} $conf{OUTDIR}/$id.find.target/grna.fa $conf{PAM} $conf{BIN}/../data/$conf{GENOME}.blacklist.bed $conf{REF} $conf{CHROMSIZE} $conf{PREFIX}\n";
+		print OUT "perl $conf{BIN}/find_targetsite.v2.pl ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.plus.proximal.sorted ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.minus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.plus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.minus.proximal.sorted $conf{CTRL} $conf{OUTDIR}/$id.find.target/grna.fa $conf{PAM} $conf{BIN}/../data/$conf{GENOME}.blacklist.bed $conf{REF} $conf{CHROMSIZE} $id\n";
 		close OUT;
 		
-		`perl $conf{BIN}/find_targetsite.v2.pl ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.plus.proximal.sorted ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.minus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.plus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.minus.proximal.sorted $conf{CTRL} $conf{OUTDIR}/$id.find.target/grna.fa $conf{PAM} $conf{BIN}/../data/$conf{GENOME}.blacklist.bed $conf{REF} $conf{CHROMSIZE} $conf{PREFIX}`;
+		`perl $conf{BIN}/find_targetsite.v2.pl ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.plus.proximal.sorted ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.minus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.plus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.minus.proximal.sorted $conf{CTRL} $conf{OUTDIR}/$id.find.target/grna.fa $conf{PAM} $conf{BIN}/../data/$conf{GENOME}.blacklist.bed $conf{REF} $conf{CHROMSIZE} $id`;
 		
 		# check sites
 		mkdir "sites" unless(-d "sites");
 		chdir "sites";
-		`perl $conf{BIN}/monitoring_offtargets.pl ../$conf{PREFIX}.parsing_water_for_visualization.offtarget.bed ../../$conf{PREFIX}\_plus/03visual/$conf{PREFIX}\_plus.plus.bdg ../../$conf{PREFIX}\_plus/03visual/$conf{PREFIX}\_plus.minus.bdg ../../$conf{PREFIX}\_minus/03visual/$conf{PREFIX}\_minus.plus.bdg ../../$conf{PREFIX}\_minus/03visual/$conf{PREFIX}\_minus.minus.bdg > monitoring_offtargets.log 2>monitoring_offtargets.err`;
+		`perl $conf{BIN}/monitoring_offtargets.pl ../$id.parsing_water_for_visualization.offtarget.bed ../../$conf{PREFIX}\_plus/03visual/$conf{PREFIX}\_plus.plus.bdg ../../$conf{PREFIX}\_plus/03visual/$conf{PREFIX}\_plus.minus.bdg ../../$conf{PREFIX}\_minus/03visual/$conf{PREFIX}\_minus.plus.bdg ../../$conf{PREFIX}\_minus/03visual/$conf{PREFIX}\_minus.minus.bdg > monitoring_offtargets.log 2>monitoring_offtargets.err`;
 		chdir "..";
 		
 		# check global site distribution
@@ -144,14 +146,15 @@ if($step eq "all" || $step eq "find_target"){
 			`cp $conf{BIN}/RIdeogram/data/human_karyotype.hg38.txt ./karyotype.txt`;
 			`cp $conf{BIN}/RIdeogram/data/human_genedensity.hg38.txt ./genedensity.txt`;
 		}
-		`perl $conf{BIN}/RIdeogram/prepare_target_offtarget_for_Rideogram.pl ../$conf{PREFIX}.all.sites.merged.confirmed ../$conf{PREFIX}.parsing_water_for_visualization.offtarget.bed > ./offtargets.txt`;
+		`perl $conf{BIN}/RIdeogram/prepare_target_offtarget_for_Rideogram.pl ../$id.all.sites.merged.confirmed ../$id.parsing_water_for_visualization.offtarget.bed > ./offtargets.txt`;
 		
 		open UL,">","./run.sh" || die $!;
 		print UL "ulimit -s 16384\n";
-		print UL "Rscript $conf{BIN}/RIdeogram//run_RIdeogram.R offtargets.txt $conf{PREFIX} > RIdeogram.log 2>RIdeogram.err\n";
+		print UL "Rscript $conf{BIN}/RIdeogram//run_RIdeogram.R offtargets.txt $id > RIdeogram.log 2>RIdeogram.err\n";
 		close UL;
 		`sh ./run.sh`;
 		chdir "..";
+		print STDERR "## Detect off-target sites for $id, sgRNA: $grna_seq, PAM:$pam. End  ... ##\n";
 	}
 }# find target END
 
