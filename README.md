@@ -25,6 +25,87 @@ water in [EMBOSS](http://emboss.sourceforge.net/download/)
 
 Tag-seq have been tested in CentOS release 7.4 (Linux OS 64 bit).
 
+## Run by Docker
+
+### Install docker
+
+```
+# update source
+sudo apt-get update
+
+# apt through https
+sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+
+# add GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+# get the stable version
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+
+# update source
+sudo apt-get update
+
+# install docker-ce
+sudo apt-get install docker-ce
+
+# set user information, so that we can run docker without sudo
+sudo usermod -a -G docker $USER
+
+# exit and login again
+```
+
+### create docker image
+
+```
+git clone https://github.com/zhoujj2013/Tag-seq.git --depth 1
+cd Tag-seq
+docker build -t ubuntu:tagseq .
+docker run -i -t ubuntu:tagseq echo "hello world!"
+```
+
+### run Tag-seq
+
+Prepare reference
+```
+# prepare reference
+mkdir ref && cd ref
+rsync -avzP rsync://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.fa.gz .
+gunzip hg19.fa.gz
+samtools faidx hg19.fa
+rsync -avzP rsync://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes .
+mkdir star_index
+/path_to_star/STAR  --runMode genomeGenerate --genomeDir ./ --genomeFastaFiles ../hg19.fa --runThreadN 8
+cd ../../
+```
+
+Prepare fastq dataset
+```
+# prepare fastq dataset as follow:
+$tree data/
+data/
+├── 4P_L_R1.fq
+├── 4P_L_R2.fq
+├── 4P_R_R1.fq
+├── 4P_R_R2.fq
+└── README.txt
+
+0 directories, 5 files
+```
+
+Run Tag-seq
+```
+cd Tag-seq/test
+docker run -v /path_to/Tag-seq/test:/mnt/tagseq -v /path_to/ref:/mnt/tagseq/ref -w /mnt/tagseq -i -t ubuntu:tagseq perl /docker_main/software/Tag-seq/bin/run_guideseq.pl ./config.docker.txt all
+#check the result
+```
+
 ## Installation
 
 ### Get Tag-seq pipeline
