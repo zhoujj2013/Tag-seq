@@ -1,4 +1,4 @@
 scipy==1.2.1
 numpy==1.16.5
 biopython==1.72
-umi-tools==1.0.1
+umi-tools==0.5.5
