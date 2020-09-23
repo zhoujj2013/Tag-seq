@@ -65,9 +65,10 @@ sudo usermod -a -G docker $USER
 
 ```
 git clone https://github.com/zhoujj2013/Tag-seq.git --depth 1
-cd Tag-seq
+cd Tag-seq/docker/
 docker build -t ubuntu:tagseq .
 docker run -i -t ubuntu:tagseq echo "hello world!"
+cd -
 ```
 
 ### run Tag-seq
@@ -102,6 +103,7 @@ data/
 Run Tag-seq
 ```
 cd Tag-seq/test
+gunzip data/*.fq.gz
 docker run -v /path_to/Tag-seq/test:/mnt/tagseq -v /path_to/ref:/mnt/tagseq/ref -w /mnt/tagseq -i -t ubuntu:tagseq perl /docker_main/software/Tag-seq/bin/run_guideseq.pl ./config.docker.txt all
 #check the result
 ```
