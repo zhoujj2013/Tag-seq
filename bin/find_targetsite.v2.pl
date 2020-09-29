@@ -42,6 +42,8 @@ my $ref = shift;
 my $chrom_size = shift;
 
 my $prefix=shift;
+my $max_mismatch = shift;
+my $max_gap = shift;
 ############## parameters end ####################
 
 
@@ -176,7 +178,7 @@ close IN;
 `/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa -gapopen 10 -gapextend 0.5 -outfile $prefix.align.rev.water.gap`;
 
 # parse gap information
-`perl $Bin/parsing_water_for_gap_mapping.v2.pl $prefix.align.water.gap $prefix.align.rev.water.gap $prefix.all.sites.merged.confirmed.ext.renamed.fa $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa $prefix.all.sites.merged.confirmed.ext.renamed.index $prefix.all.sites.merged.confirmed.ext.rev.renamed.index $ref $grna > ./$prefix.parsing_water_for_visualization.offtarget.gap.raw.bed`;
+`perl $Bin/parsing_water_for_gap_mapping.v2.pl $prefix.align.water.gap $prefix.align.rev.water.gap $prefix.all.sites.merged.confirmed.ext.renamed.fa $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa $prefix.all.sites.merged.confirmed.ext.renamed.index $prefix.all.sites.merged.confirmed.ext.rev.renamed.index $ref $grna $max_mismatch $max_gap > ./$prefix.parsing_water_for_visualization.offtarget.gap.raw.bed`;
 `perl $Bin/get_mapped_sites4gaps.pl $prefix.parsing_water_for_visualization.offtarget.gap.raw.bed $prefix.all.sites.merged.confirmed.ext.fa $prefix.all.sites.merged.confirmed.ext.rev.fa $prefix.all.sites.merged.confirmed.ext.bed > $prefix.parsing_water_for_visualization.offtarget.gap.bed`;
 ########### end ###################################
 
@@ -192,7 +194,7 @@ close IN;
 
 ###################################################
 # process alignments without gaps 
-`perl $Bin/parsing_water_for_visualization.pl $prefix.align.water $prefix.align.rev.water $prefix.all.sites.merged.confirmed.ext.renamed.fa $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa $prefix.all.sites.merged.confirmed.ext.renamed.index $prefix.all.sites.merged.confirmed.ext.rev.renamed.index $grna $grna_length > $prefix.parsing_water_for_visualization.txt`;
+`perl $Bin/parsing_water_for_visualization.pl $prefix.align.water $prefix.align.rev.water $prefix.all.sites.merged.confirmed.ext.renamed.fa $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa $prefix.all.sites.merged.confirmed.ext.renamed.index $prefix.all.sites.merged.confirmed.ext.rev.renamed.index $grna $grna_length $max_mismatch > $prefix.parsing_water_for_visualization.txt`;
 
 `perl $Bin/prepare_for_visualization.v2.pl $prefix.all.sites.merged.confirmed.ext.renamed.index $prefix.all.sites.merged.confirmed.ext.bed $prefix.parsing_water_for_visualization.txt > $prefix.parsing_water_for_visualization.offtarget.raw`;
 

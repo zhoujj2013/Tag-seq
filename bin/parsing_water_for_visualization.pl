@@ -11,7 +11,7 @@ my $rv_renamed_index_f = shift;
 my $grna = shift; # grna fasta file
 my $ref_length = shift; # grna length
 
-my $pre_mismatch = 6;
+my $pre_mismatch = shift;
 
 # read in the index file, so that we can trace coordinates.
 # start

@@ -30,6 +30,9 @@ foreach my $d (@ARGV){
 	my $abs_d = abs_path($d);
 	my $prefix = basename($abs_d);
 	$abs_d = dirname($abs_d);
+	my $expr_id = basename(dirname($abs_d));
+	$expr_id =~ s/out\.//g;
+
 	#my @f = glob("$d/*");
 	#my $prefix;
 	#foreach my $f (@f){
@@ -37,7 +40,8 @@ foreach my $d (@ARGV){
 	#		$prefix = $1;
 	#		}
 	#}
-	push @sample_names,$prefix;
+	
+	push @sample_names,$expr_id;
 	my $arr = "$abs_d/$prefix.parsing_water_for_visualization.offtarget.combined.forVis.bed:$prefix";
 	push @s,$arr;
 }

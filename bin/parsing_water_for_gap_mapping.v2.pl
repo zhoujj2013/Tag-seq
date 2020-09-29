@@ -31,8 +31,8 @@ my $grna = shift; # grna fasta file
 my $grna_len = length($grna);
 
 # change the mismatch and gaps
-my $pre_mismatch_and_gap = 6;
-my $gap_number_cutoff = 2;
+my $pre_mismatch_and_gap = shift;
+my $gap_number_cutoff = shift;
 #############################################################
 
 #############################################################

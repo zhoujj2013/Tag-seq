@@ -14,6 +14,10 @@ CTRL	./control.bed
 # grna information
 GRNA	./sgrna.lst
 
+# off-target detection parameters
+MaxMismatch	6
+MaxGap	2
+
 # Output directory
 OUTDIR	./out.TEST
 PREFIX	TEST
