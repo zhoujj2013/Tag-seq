@@ -17,6 +17,7 @@ GRNA	./sgrna.lst
 # off-target detection parameters
 MaxMismatch	6
 MaxGap	2
+MaxGapMismatch	4
 
 # Output directory
 OUTDIR	./out.TEST

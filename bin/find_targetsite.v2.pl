@@ -44,6 +44,8 @@ my $chrom_size = shift;
 my $prefix=shift;
 my $max_mismatch = shift;
 my $max_gap = shift;
+my $max_gap_mismatch = shift;
+
 ############## parameters end ####################
 
 
@@ -178,7 +180,7 @@ close IN;
 `/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa -gapopen 10 -gapextend 0.5 -outfile $prefix.align.rev.water.gap`;
 
 # parse gap information
-`perl $Bin/parsing_water_for_gap_mapping.v2.pl $prefix.align.water.gap $prefix.align.rev.water.gap $prefix.all.sites.merged.confirmed.ext.renamed.fa $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa $prefix.all.sites.merged.confirmed.ext.renamed.index $prefix.all.sites.merged.confirmed.ext.rev.renamed.index $ref $grna $max_mismatch $max_gap > ./$prefix.parsing_water_for_visualization.offtarget.gap.raw.bed`;
+`perl $Bin/parsing_water_for_gap_mapping.v2.pl $prefix.align.water.gap $prefix.align.rev.water.gap $prefix.all.sites.merged.confirmed.ext.renamed.fa $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa $prefix.all.sites.merged.confirmed.ext.renamed.index $prefix.all.sites.merged.confirmed.ext.rev.renamed.index $ref $grna $max_gap $max_gap_mismatch > ./$prefix.parsing_water_for_visualization.offtarget.gap.raw.bed`;
 `perl $Bin/get_mapped_sites4gaps.pl $prefix.parsing_water_for_visualization.offtarget.gap.raw.bed $prefix.all.sites.merged.confirmed.ext.fa $prefix.all.sites.merged.confirmed.ext.rev.fa $prefix.all.sites.merged.confirmed.ext.bed > $prefix.parsing_water_for_visualization.offtarget.gap.bed`;
 ########### end ###################################
 

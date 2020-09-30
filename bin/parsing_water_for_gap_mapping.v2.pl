@@ -31,8 +31,10 @@ my $grna = shift; # grna fasta file
 my $grna_len = length($grna);
 
 # change the mismatch and gaps
-my $pre_mismatch_and_gap = shift;
+#my $pre_mismatch_and_gap = shift;
 my $gap_number_cutoff = shift;
+my $gap_mismatch_cutoff = shift;
+
 #############################################################
 
 #############################################################
@@ -250,7 +252,8 @@ while(<IN>){
 	my $mis = 0;
 
 	($mis, $gap_number) = align($realign,$bugle);
-	if($gap_number <= $gap_number_cutoff && $mis + $gap_number <= $pre_mismatch_and_gap){
+	#if($gap_number <= $gap_number_cutoff && $mis + $gap_number <= $pre_mismatch_and_gap){
+	if($gap_number <= $gap_number_cutoff && $mis <= $gap_mismatch_cutoff){
 		print "$chr_id\t$r_start\t$r_end\t$gap_number\t$mis\t$grna\t$realign\t$ali_str\t$bugle\t$rid\t+\n";
 	}
 }
@@ -395,7 +398,7 @@ while(<IN>){
 	my $mis = 0;
 
 	($mis, $gap_number) = align($realign,$bugle);
-	if($gap_number <= $gap_number_cutoff && $mis + $gap_number <= $pre_mismatch_and_gap){
+	if($gap_number <= $gap_number_cutoff && $mis <= $gap_mismatch_cutoff){
 		print "$chr_id\t$r_start\t$r_end\t$gap_number\t$mis\t$grna\t$realign\t$ali_str\t$bugle\t$rid\t-\n";
 	}
 }

@@ -59,6 +59,7 @@ print OUT "OUTDIR\t$conf{OUTDIR}\n";
 print OUT "# parameter for detecting off-target sites\n";
 print OUT "MaxMismatch\t$conf{MaxMismatch}\n";
 print OUT "MaxGap\t$conf{MaxGap}\n";
+print OUT "MaxGapMismatch\t$conf{MaxGapMismatch}\n";
 
 print OUT "# parameter\n";
 print OUT "MINLEN\t$conf{MINLEN}\n";
@@ -129,10 +130,10 @@ if($step eq "all" || $step eq "find_target"){
 		close OUT;
 
 		open OUT, ">", "run.sh" || die $!;
-		print OUT "perl $conf{BIN}/find_targetsite.v2.pl ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.plus.proximal.sorted ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.minus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.plus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.minus.proximal.sorted $conf{CTRL} $conf{OUTDIR}/$id.find.target/grna.fa $conf{PAM} $conf{BIN}/../data/$conf{GENOME}.blacklist.bed $conf{REF} $conf{CHROMSIZE} $id $conf{MaxMismatch} $conf{MaxGap}\n";
+		print OUT "perl $conf{BIN}/find_targetsite.v2.pl ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.plus.proximal.sorted ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.minus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.plus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.minus.proximal.sorted $conf{CTRL} $conf{OUTDIR}/$id.find.target/grna.fa $conf{PAM} $conf{BIN}/../data/$conf{GENOME}.blacklist.bed $conf{REF} $conf{CHROMSIZE} $id $conf{MaxMismatch} $conf{MaxGap} $conf{MaxGapMismatch}\n";
 		close OUT;
 		
-		`perl $conf{BIN}/find_targetsite.v2.pl ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.plus.proximal.sorted ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.minus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.plus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.minus.proximal.sorted $conf{CTRL} $conf{OUTDIR}/$id.find.target/grna.fa $conf{PAM} $conf{BIN}/../data/$conf{GENOME}.blacklist.bed $conf{REF} $conf{CHROMSIZE} $id $conf{MaxMismatch} $conf{MaxGap}`;
+		`perl $conf{BIN}/find_targetsite.v2.pl ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.plus.proximal.sorted ../$conf{PREFIX}\_plus/02potentialTargets/$conf{PREFIX}\_plus.minus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.plus.proximal.sorted ../$conf{PREFIX}\_minus/02potentialTargets/$conf{PREFIX}\_minus.minus.proximal.sorted $conf{CTRL} $conf{OUTDIR}/$id.find.target/grna.fa $conf{PAM} $conf{BIN}/../data/$conf{GENOME}.blacklist.bed $conf{REF} $conf{CHROMSIZE} $id $conf{MaxMismatch} $conf{MaxGap} $conf{MaxGapMismatch}`;
 		
 		# check sites
 		mkdir "sites" unless(-d "sites");
