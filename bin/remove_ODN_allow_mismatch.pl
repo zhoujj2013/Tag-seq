@@ -14,9 +14,10 @@ use Cwd qw(abs_path);
 sub usage {
         my $usage = << "USAGE";
 
-        Remove ODN tag for read2.
+        Remove ODN tag for read2 (allow mismatchs).
+	But this script is very slow (1M, 10mins), I have obsoleted.
         Author: zhoujj2013\@gmail.com
-        Usage: $0 xxxx.r2.fq <ODN tag, ATCG>
+        Usage: $0 xxx.r1.fq xxxx.r2.fq <ODN tag, ATCG> <max_mismatch> <outdir> <prefix>
 
 USAGE
 print "$usage";
@@ -27,6 +28,7 @@ exit(1);
 my $r1_f = shift;
 my $r2_f = shift;
 my $odn = shift;
+my $max_mismatch = shift;
 my $outdir = shift;
 my $prefix = shift;
 
@@ -43,31 +45,29 @@ while(<IN>){
 	my $seq = <IN>;
 	my $id2 = <IN>;
 	my $qual = <IN>;
-	#print $id1;
-	my $start = 0;
-	while($seq =~ /$odn/g){
-		$start = pos($seq);
-	}
 	chomp($seq);
 	chomp($qual);
-	my $len = length($seq);
-	my $new_seq = substr($seq,$start,$len-1);
-	my $new_qual = substr($qual,$start,$len-1);
-	# rewrite this part for allowing mismatchs
-	#
-	#
+
+	#print $id1;
 	
-	if($seq !~ /$odn/g){
+	my $start = align($odn,$seq,$max_mismatch);
+	#print "$start\n";
+	if($start eq "NA"){
 		$filtered{$id} = 1;
 		next;
-	}elsif(length($new_seq) > 0){
-		print OUT2 "$id1";
-		print OUT2 "$new_seq\n";
-		print OUT2 "$id2";
-		print OUT2 "$new_qual\n";
 	}else{
-		$filtered{$id} = 1;
-		next;
+		my $len = length($seq);
+		my $new_seq = substr($seq,$start,$len-1);
+		my $new_qual = substr($qual,$start,$len-1);
+		if(length($new_seq) > 0){
+			print OUT2 "$id1";
+			print OUT2 "$new_seq\n";
+			print OUT2 "$id2";
+			print OUT2 "$new_qual\n";
+		}else{
+			$filtered{$id} = 1;
+			next;
+		}
 	}
 }
 close IN;
@@ -102,3 +102,41 @@ close OUT1;
 close OUT2;
 close OUT3;
 
+###############
+sub align {
+	my $odn_seq = shift;
+	my @o = split //,$odn_seq;
+
+	my $q_seq = shift;
+	my $max_mis = shift;
+
+	#print "$odn_seq\t$q_seq\t$max_mis\n";
+	
+	my $odn_seq_len = length($odn_seq);
+	my $q_seq_len = length($q_seq);
+
+	my %k;
+	for(my $i = 0; $i < $q_seq_len - $odn_seq_len + 1; $i++){
+		my $s = $i+$odn_seq_len;
+		$k{$s} =  substr($q_seq,$i,$odn_seq_len);
+		#print length($k{$s})."\n";
+	}
+	#print scalar(keys %k)."\n";
+	#print "#############\n";
+	#print Dumper(\%k);
+
+	my $pos = "NA";
+	foreach my $key (keys %k){
+		my @q = split //,$k{$key};
+		my $mis = 0;
+		for(my $j = 0; $j < scalar(@q); $j++){
+			if($q[$j] ne $o[$j]){
+				$mis++
+			}
+		}
+		if($mis <= $max_mis){
+			$pos = $key;
+		}
+	}
+	return $pos;
+}

@@ -180,17 +180,27 @@ close IN;
 # align
 `/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.renamed.fa -gapopen 100 -gapextend 0.5 -outfile $prefix.align.water`;
 `/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa -gapopen 100 -gapextend 0.5 -outfile $prefix.align.rev.water`;
-# align (gap allow)
-`/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.renamed.fa -gapopen 10 -gapextend 0.5 -outfile $prefix.align.water.gap`;
-`/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa -gapopen 10 -gapextend 0.5 -outfile $prefix.align.rev.water.gap`;
 ########### alignment end ########################
 
 ##################################################
 ## process alignments with gaps
+`/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.renamed.fa -gapopen 10 -gapextend 0.5 -outfile $prefix.align.water.gap`;
+`/usr/bin/water -asequence $grna_f -bsequence  $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa -gapopen 10 -gapextend 0.5 -outfile $prefix.align.rev.water.gap`;
+
 # parse gap information
 `perl $Bin/parsing_water_for_gap_mapping.v2.pl $prefix.align.water.gap $prefix.align.rev.water.gap $prefix.all.sites.merged.confirmed.ext.renamed.fa $prefix.all.sites.merged.confirmed.ext.rev.renamed.fa $prefix.all.sites.merged.confirmed.ext.renamed.index $prefix.all.sites.merged.confirmed.ext.rev.renamed.index $ref $grna $max_gap $max_gap_mismatch > ./$prefix.parsing_water_for_visualization.offtarget.gap.raw.bed`;
 `perl $Bin/get_mapped_sites4gaps.pl $prefix.parsing_water_for_visualization.offtarget.gap.raw.bed $prefix.all.sites.merged.confirmed.ext.fa $prefix.all.sites.merged.confirmed.ext.rev.fa $prefix.all.sites.merged.confirmed.ext.bed > $prefix.parsing_water_for_visualization.offtarget.gap.bed`;
 ########### end ###################################
+
+###################################################
+## retrive alignment information and recover the coordinates
+#`perl /home/zhoujj/project/02guide_seq/bin/parsing_water.pl $prefix.align.water $prefix.all.sites.merged.confirmed.ext.renamed.index > $prefix.align.water.result`;
+#`perl /home/zhoujj/project/02guide_seq/bin/parsing_water.pl $prefix.align.rev.water $prefix.all.sites.merged.confirmed.ext.rev.renamed.index > $prefix.align.water.rev.result`;
+#
+### recover the coordinates
+#`perl /home/zhoujj/project/02guide_seq/bin/recover_coor.pl $prefix.align.water.result $prefix.all.sites.merged.confirmed.ext.bed $prefix.all.sites.merged.confirmed.ext.renamed.index > $prefix.clustered.region.ext.align.bed`;
+#`perl /home/zhoujj/project/02guide_seq/bin/recover_coor.pl $prefix.align.water.result $prefix.all.sites.merged.confirmed.ext.bed $prefix.all.sites.merged.confirmed.ext.rev.renamed.index > $prefix.clustered.region.ext.rev.align.bed`;
+############## the old version ####################
 
 ###################################################
 # process alignments without gaps 
@@ -219,6 +229,8 @@ close IN;
 
 ################ visualization ###################
 mkdir "./$prefix.drawTargetsite" unless(-d "./$prefix.drawTargetsite");
+
+#print "python /home/zhoujj/software/guideseq/guideseq/guideseq.py visualize --infile $prefix.parsing_water_for_visualization.offtarget --outfolder $prefix.drawTargetsite/ > $prefix.drawTargetsite/$prefix.log 2> $prefix.rawTargetsite/$prefix.err\n";
 
 #print "python $Bin/visualization.py --identified_file $prefix.parsing_water_for_visualization.offtarget.combined.forVis.bed --outfile $prefix.drawTargetsite/$prefix\_offtargets --title $prefix --PAM $pam\n";
 
